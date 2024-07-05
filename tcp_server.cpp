@@ -21,6 +21,40 @@ void TCPServer::StartServer(){
         throw std::runtime_error("Unable to bind socket");
     if (listen(socketIndex, 10) < 0)
         throw std::runtime_error("Socket listen failed");
+
+    sockaddr_in currentAddress;
+    uint currentLen;
+    uint bytesReceived;
+    while(true){
+        int currentSocket = accept(socketIndex, (sockaddr *)&currentAddress, &currentLen);
+        if(currentSocket < 0) 
+            throw std::runtime_error("Unable to accept connection from"s + inet_ntoa(currentAddress.sin_addr));
+        
+        char buffer[UINT16_MAX] = {0};
+        bytesReceived = read(currentSocket, buffer, UINT16_MAX);
+        if (bytesReceived < 0)
+            throw std::runtime_error("Failed to read bytes from client socket connection");
+
+        Respond(currentSocket);
+
+        close(currentSocket);
+    }
+}
+
+std::string buildResponse()
+{
+    std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";      
+    return "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: "s + std::to_string(htmlFile.size()) + "\n\n" + htmlFile;
+}
+
+void TCPServer::Respond(int currentSocket){
+    size_t bytesSent;
+    std::string message = buildResponse();
+
+    bytesSent = write(currentSocket, message.c_str(), message.size());
+
+    if (bytesSent != message.size())
+        throw std::runtime_error("Failed to sent bytes to client");
 }
 
 void TCPServer::CloseServer(){

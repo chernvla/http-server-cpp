@@ -9,20 +9,20 @@
 #include <exception>
 #include <iostream>
 
+using namespace std::literals;
+
 class TCPServer{
 
     int socketIndex;
     sockaddr_in socketAddress;
     
-
+    public:
     TCPServer(std::string ip, int port);
     TCPServer(int port);
     void StartServer();
     void CloseServer();
+    void Respond(int currentSocket);
     ~TCPServer();
-
-
-    public:
 
 };
 
